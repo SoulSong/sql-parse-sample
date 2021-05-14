@@ -12,14 +12,17 @@ import java.util.Set;
  */
 public interface SqlExtractHelper {
 
-   Set<String> TABLE_PREFIX = ImmutableSet.of("dwd_");
+    /**
+     * 约定了待提取表的前缀
+     */
+    Set<String> TABLE_PREFIX = ImmutableSet.of("dwd_");
 
     /**
      * 提取当前sql文中的table和field信息
      *
-     * @param sql
-     * @param sqlInfo
-     * @throws Exception
+     * @param sql     sql文本
+     * @param sqlInfo sql上下文信息存储
+     * @throws Exception e
      */
     void extractSqlInfo(String sql, SqlInfo sqlInfo) throws Exception;
 }

@@ -1,6 +1,5 @@
 package com.shf.sql.helper;
 
-import com.google.common.collect.ImmutableSet;
 import lombok.extern.slf4j.Slf4j;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.AnalyticExpression;
@@ -34,7 +33,6 @@ import org.apache.commons.collections4.CollectionUtils;
 
 import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -42,8 +40,6 @@ import java.util.stream.Collectors;
  */
 @Slf4j
 public class SqlParseHelper implements SqlExtractHelper {
-    private static final Set<String> TABLE_PREFIX = ImmutableSet.of("dwd_");
-
     private SqlParseHelper() {
     }
 
@@ -180,7 +176,7 @@ public class SqlParseHelper implements SqlExtractHelper {
     }
 
     private void handlerAllColumns(AllColumns allColumns, SqlInfo sqlInfo) {
-        sqlInfo.setContainsAllColumn(true);
+        sqlInfo.setContainsSelectAllColumns(true);
     }
 
     private void handlerComparisonOperator(ComparisonOperator comparisonOperator, SqlInfo sqlInfo) {

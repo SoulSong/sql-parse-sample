@@ -32,7 +32,7 @@ public class SqlInfo {
     /**
      * Note: 只有在needExtractFields为true时才会进行allColumn判断
      */
-    private boolean containsAllColumn = false;
+    private boolean containsSelectAllColumns = false;
     private final Set<String> tables = new HashSet<>();
     private final HashMap<String, Set<String>> fields = new HashMap<>();
 
@@ -49,7 +49,7 @@ public class SqlInfo {
                 fieldList.forEach(field -> sb.append(TAB).append(table).append(RIGHT_ARROWS).append(field).append(BR));
             });
         }
-        sb.append("containsAllColumn:").append(BR).append(TAB).append(isContainsAllColumn()).append(BR);
+        sb.append("containsSelectAllColumns:").append(BR).append(TAB).append(isContainsSelectAllColumns()).append(BR);
         return sb.toString();
     }
 }

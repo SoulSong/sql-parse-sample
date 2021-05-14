@@ -1,6 +1,5 @@
 package com.shf.sql.helper;
 
-import com.google.common.collect.ImmutableSet;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.calcite.avatica.util.Casing;
 import org.apache.calcite.avatica.util.Quoting;
@@ -21,7 +20,6 @@ import org.apache.calcite.sql.validate.SqlConformanceEnum;
 import org.apache.calcite.util.SourceStringReader;
 
 import java.util.HashSet;
-import java.util.Set;
 
 import static com.shf.sql.helper.Constants.STAR;
 
@@ -34,7 +32,6 @@ import static com.shf.sql.helper.Constants.STAR;
  */
 @Slf4j
 public class CalciteHelper implements SqlExtractHelper, SqlChecker {
-    private static final Set<String> TABLE_PREFIX = ImmutableSet.of("dwd_");
     private static final SqlParser.Config CONFIG = SqlParser.config()
             .withParserFactory(SqlParserImpl.FACTORY)
             .withQuoting(Quoting.DOUBLE_QUOTE)
@@ -189,7 +186,6 @@ public class CalciteHelper implements SqlExtractHelper, SqlChecker {
         }
     }
 
-
     private static void handlerField(SqlNode field, SqlInfo sqlInfo) {
         if (field == null || !sqlInfo.isNeedExtractFields()) {
             return;
@@ -206,7 +202,7 @@ public class CalciteHelper implements SqlExtractHelper, SqlChecker {
                 String fullFiledName = sqlIdentifier.toString();
                 log.debug("field name --> {}", sqlIdentifier.toString());
                 if (STAR.equalsIgnoreCase(fullFiledName)) {
-                    sqlInfo.setContainsAllColumn(true);
+                    sqlInfo.setContainsSelectAllColumns(true);
                 }
                 String[] splitName = fullFiledName.split("\\.");
                 if (splitName.length == 2 && TABLE_PREFIX.stream().anyMatch(fullFiledName::startsWith)) {

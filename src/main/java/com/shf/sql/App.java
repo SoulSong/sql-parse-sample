@@ -1,9 +1,12 @@
 package com.shf.sql;
 
 import com.shf.sql.helper.CalciteHelper;
+import com.shf.sql.helper.SqlFormatter;
 import com.shf.sql.helper.SqlInfo;
 import com.shf.sql.helper.SqlParseHelper;
 import lombok.extern.slf4j.Slf4j;
+
+import java.util.Arrays;
 
 @Slf4j
 public class App {
@@ -16,6 +19,9 @@ public class App {
 
         log.info("***************************sqlParseExtractTest***************************");
         sqlParseExtractTest();
+
+        log.info("***************************sqlFormatterTest***************************");
+        sqlFormatterTest();
     }
 
     private static void calciteExtractTest() throws Exception {
@@ -68,6 +74,11 @@ public class App {
 
         sql = "SELECT * FROM (SELECT x.one_layer_name, x.two_layer_name, COUNT(DISTINCT dwd_patent_ans_relation_rt.pdoc_id) AS patent_count FROM (SELECT dwd_patent_ans_relation_rt.ans_id AS one_layer_ans_id, dwd_patent_ans_relation_rt.`name` AS one_layer_name, dwd_patent_ans_relation_rt.ans_id AS two_layer_ans_id, dwd_patent_ans_relation_rt.`name` AS two_layer_name FROM (SELECT dwd_patent_cite_relation_rt.t_pdoc_id FROM dwd_patent_ans_relation_rt t1, dwd_patent_cite_relation_rt t2 WHERE dwd_patent_ans_relation_rt.pdoc_id = dwd_patent_cite_relation_rt.pdoc_id AND dwd_patent_ans_relation_rt.ans_id = 'A'AND dwd_patent_ans_relation_rt.type = 'current_assignee') a, dwd_patent_cite_relation_rt b, dwd_patent_ans_relation_rt c, dwd_patent_cite_relation_rt d, dwd_patent_ans_relation_rt e, (SELECT dwd_patent_cite_relation_rt.pdoc_id, dwd_patent_ans_relation_rt.ans_id FROM dwd_patent_ans_relation_rt t1, dwd_patent_cite_relation_rt t2 WHERE dwd_patent_ans_relation_rt.pdoc_id = dwd_patent_cite_relation_rt.t_pdoc_id AND dwd_patent_ans_relation_rt.ans_id = 'G' AND dwd_patent_ans_relation_rt.type = 'current_assignee') f WHERE a.t_pdoc_id = dwd_patent_cite_relation_rt.pdoc_id AND dwd_patent_cite_relation_rt.pdoc_id = dwd_patent_ans_relation_rt.pdoc_id AND dwd_patent_ans_relation_rt.ans_id <> 'A' AND dwd_patent_ans_relation_rt.ans_id <> 'G' AND dwd_patent_ans_relation_rt.type = 'current_assignee' AND dwd_patent_cite_relation_rt.t_pdoc_id = dwd_patent_cite_relation_rt.pdoc_id AND dwd_patent_cite_relation_rt.pdoc_id = dwd_patent_ans_relation_rt.pdoc_id AND dwd_patent_cite_relation_rt.pdoc_id = f.pdoc_id) x, dwd_patent_ans_relation_rt y, dwd_ans_rt z WHERE x.two_layer_ans_id = dwd_patent_ans_relation_rt.ans_id AND dwd_patent_ans_relation_rt.ans_id = dwd_ans_rt.ans_id AND dwd_ans_rt.lang = 'cn' GROUP BY x.two_layer_ans_id, x.two_layer_ans_id) k ORDER BY k.patent_count DESC LIMIT 5";
         sqlParseHelper.extractSqlInfo(sql, SqlInfo.builder().sql(sql).needExtractFields(true).needExtractTables(true).build());
+    }
+
+    private static void sqlFormatterTest() {
+        String sql = "select     dwd_patent_publication_rt.patent_type,count(patent_type) as total_count from dwd_patent_publication_rt  where pdoc_id in (${ids}) group by patent_type limit 5";
+        log.info(SqlFormatter.trimSpecialChars(SqlFormatter.combineBlank(sql), Arrays.asList("${", "}")));
     }
 
 }

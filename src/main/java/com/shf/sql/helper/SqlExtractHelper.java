@@ -22,7 +22,8 @@ public interface SqlExtractHelper {
      *
      * @param sql     sql文本
      * @param sqlInfo sql上下文信息存储
+     * @return SqlInfo
      * @throws Exception e
      */
-    void extractSqlInfo(String sql, SqlInfo sqlInfo) throws Exception;
+    SqlInfo extractSqlInfo(String sql, SqlInfo sqlInfo) throws Exception;
 }

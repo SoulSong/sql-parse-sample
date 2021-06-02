@@ -1,5 +1,8 @@
-package com.shf.sql.helper;
+package com.shf.sql.helper.calcite;
 
+import com.shf.sql.helper.SqlChecker;
+import com.shf.sql.helper.SqlExtractHelper;
+import com.shf.sql.helper.SqlInfo;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.calcite.avatica.util.Casing;
 import org.apache.calcite.avatica.util.Quoting;
@@ -76,15 +79,15 @@ public class CalciteHelper implements SqlExtractHelper, SqlChecker {
     }
 
     @Override
-    public void extractSqlInfo(String sql, SqlInfo sqlInfo) throws Exception {
-        extractSqlInfo(sql, CONFIG, sqlInfo);
+    public SqlInfo extractSqlInfo(String sql, SqlInfo sqlInfo) throws Exception {
+        return extractSqlInfo(sql, CONFIG, sqlInfo);
     }
 
-    public void extractSqlInfo(String sql, SqlParser.Config config, SqlInfo sqlInfo) throws SqlParseException {
+    public SqlInfo extractSqlInfo(String sql, SqlParser.Config config, SqlInfo sqlInfo) throws SqlParseException {
         SqlParser sqlParser = SqlParser.create(new SourceStringReader(sql), config);
         SqlNode sqlNode = sqlParser.parseQuery();
         handlerSQL(sqlNode, sqlInfo);
-        log.info(sqlInfo.toString());
+        return sqlInfo;
     }
 
     private static void handlerSQL(SqlNode sqlNode, SqlInfo sqlInfo) {

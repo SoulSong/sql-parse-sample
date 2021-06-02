@@ -1,5 +1,7 @@
-package com.shf.sql.helper;
+package com.shf.sql.helper.sqlparse;
 
+import com.shf.sql.helper.SqlExtractHelper;
+import com.shf.sql.helper.SqlInfo;
 import lombok.extern.slf4j.Slf4j;
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.AnalyticExpression;
@@ -52,11 +54,11 @@ public class SqlParseHelper implements SqlExtractHelper {
     }
 
     @Override
-    public void extractSqlInfo(String sql, SqlInfo sqlInfo) throws Exception {
-        extractSqlInfo(sql, true, sqlInfo);
+    public SqlInfo extractSqlInfo(String sql, SqlInfo sqlInfo) throws Exception {
+        return extractSqlInfo(sql, true, sqlInfo);
     }
 
-    public void extractSqlInfo(String sql, boolean isSingle, SqlInfo sqlInfo) throws JSQLParserException, ParseException {
+    public SqlInfo extractSqlInfo(String sql, boolean isSingle, SqlInfo sqlInfo) throws JSQLParserException, ParseException {
         if (isSingle) {
             handlerStatement(parseSingleSql(sql), sqlInfo);
         } else {
@@ -65,7 +67,7 @@ public class SqlParseHelper implements SqlExtractHelper {
                 handlerStatement(statement, sqlInfo);
             });
         }
-        log.info(sqlInfo.toString());
+        return sqlInfo;
     }
 
     private void handlerStatement(Statement statement, SqlInfo sqlInfo) {

@@ -64,6 +64,12 @@
             <artifactId>calcite-core</artifactId>
             <version>1.26.0</version>
         </dependency>
+
+        <dependency>
+            <groupId>com.alibaba</groupId>
+            <artifactId>druid</artifactId>
+            <version>1.2.6</version>
+        </dependency>
     </dependencies>
 
     <build>

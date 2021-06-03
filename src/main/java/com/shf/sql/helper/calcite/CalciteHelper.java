@@ -8,6 +8,7 @@ import org.apache.calcite.avatica.util.Casing;
 import org.apache.calcite.avatica.util.Quoting;
 import org.apache.calcite.config.Lex;
 import org.apache.calcite.sql.SqlBasicCall;
+import org.apache.calcite.sql.SqlDialect;
 import org.apache.calcite.sql.SqlIdentifier;
 import org.apache.calcite.sql.SqlJoin;
 import org.apache.calcite.sql.SqlKind;
@@ -16,6 +17,7 @@ import org.apache.calcite.sql.SqlNodeList;
 import org.apache.calcite.sql.SqlNumericLiteral;
 import org.apache.calcite.sql.SqlOrderBy;
 import org.apache.calcite.sql.SqlSelect;
+import org.apache.calcite.sql.dialect.MysqlSqlDialect;
 import org.apache.calcite.sql.parser.SqlParseException;
 import org.apache.calcite.sql.parser.SqlParser;
 import org.apache.calcite.sql.parser.impl.SqlParserImpl;
@@ -60,8 +62,7 @@ public class CalciteHelper implements SqlExtractHelper, SqlChecker {
     }
 
     public boolean withLimit(String sql, SqlParser.Config config) throws Exception {
-        SqlParser sqlParser = SqlParser.create(new SourceStringReader(sql), config);
-        SqlNode sqlNode = sqlParser.parseQuery();
+        SqlNode sqlNode = parseSql(sql, config);
         SqlKind kind = sqlNode.getKind();
         switch (kind) {
             case SELECT:
@@ -78,19 +79,27 @@ public class CalciteHelper implements SqlExtractHelper, SqlChecker {
         return false;
     }
 
+    public SqlNode parseSql(String sql) throws SqlParseException {
+        return parseSql(sql, CONFIG);
+    }
+
+    public SqlNode parseSql(String sql, SqlParser.Config config) throws SqlParseException {
+        SqlParser sqlParser = SqlParser.create(new SourceStringReader(sql), config);
+        return sqlParser.parseQuery();
+    }
+
     @Override
     public SqlInfo extractSqlInfo(String sql, SqlInfo sqlInfo) throws Exception {
         return extractSqlInfo(sql, CONFIG, sqlInfo);
     }
 
     public SqlInfo extractSqlInfo(String sql, SqlParser.Config config, SqlInfo sqlInfo) throws SqlParseException {
-        SqlParser sqlParser = SqlParser.create(new SourceStringReader(sql), config);
-        SqlNode sqlNode = sqlParser.parseQuery();
-        handlerSQL(sqlNode, sqlInfo);
+        SqlNode sqlNode = parseSql(sql, config);
+        handlerSql(sqlNode, sqlInfo);
         return sqlInfo;
     }
 
-    private static void handlerSQL(SqlNode sqlNode, SqlInfo sqlInfo) {
+    private static void handlerSql(SqlNode sqlNode, SqlInfo sqlInfo) {
         SqlKind kind = sqlNode.getKind();
         switch (kind) {
             case SELECT:
@@ -98,7 +107,7 @@ public class CalciteHelper implements SqlExtractHelper, SqlChecker {
                 break;
             case UNION:
                 ((SqlBasicCall) sqlNode).getOperandList().forEach(node -> {
-                    handlerSQL(node, sqlInfo);
+                    handlerSql(node, sqlInfo);
                 });
                 break;
             case JOIN:
@@ -121,7 +130,7 @@ public class CalciteHelper implements SqlExtractHelper, SqlChecker {
     private static void handlerOrderBy(SqlNode node, SqlInfo sqlInfo) {
         SqlOrderBy sqlOrderBy = (SqlOrderBy) node;
         SqlNode query = sqlOrderBy.query;
-        handlerSQL(query, sqlInfo);
+        handlerSql(query, sqlInfo);
         SqlNodeList orderList = sqlOrderBy.orderList;
         handlerField(orderList, sqlInfo);
     }
@@ -169,20 +178,20 @@ public class CalciteHelper implements SqlExtractHelper, SqlChecker {
             case AS:
                 SqlBasicCall sqlBasicCall = (SqlBasicCall) from;
                 SqlNode selectNode = sqlBasicCall.getOperandList().get(0);
-                handlerSQL(selectNode, sqlInfo);
+                handlerSql(selectNode, sqlInfo);
                 break;
             case JOIN:
                 SqlJoin sqlJoin = (SqlJoin) from;
                 SqlNode left = sqlJoin.getLeft();
-                handlerSQL(left, sqlInfo);
+                handlerSql(left, sqlInfo);
                 SqlNode right = sqlJoin.getRight();
-                handlerSQL(right, sqlInfo);
+                handlerSql(right, sqlInfo);
                 // 当表连接采用类似select * from a,b where a.id = b.cid时，此处condition为null
                 SqlNode condition = sqlJoin.getCondition();
                 handlerField(condition, sqlInfo);
                 break;
             case SELECT:
-                handlerSQL(from, sqlInfo);
+                handlerSql(from, sqlInfo);
                 break;
             default:
                 break;
@@ -196,9 +205,9 @@ public class CalciteHelper implements SqlExtractHelper, SqlChecker {
         SqlKind kind = field.getKind();
         switch (kind) {
             case AS:
-                SqlNode[] operands_as = ((SqlBasicCall) field).operands;
-                SqlNode left_as = operands_as[0];
-                handlerField(left_as, sqlInfo);
+                SqlNode[] operandsAs = ((SqlBasicCall) field).operands;
+                SqlNode leftAs = operandsAs[0];
+                handlerField(leftAs, sqlInfo);
                 break;
             case IDENTIFIER:
                 SqlIdentifier sqlIdentifier = (SqlIdentifier) field;
@@ -230,4 +239,11 @@ public class CalciteHelper implements SqlExtractHelper, SqlChecker {
         }
     }
 
+    public String sqlNodeToString(SqlNode sqlNode) {
+        return sqlNodeToString(sqlNode, MysqlSqlDialect.DEFAULT);
+    }
+
+    public String sqlNodeToString(SqlNode sqlNode, SqlDialect sqlDialect) {
+        return sqlNode.toSqlString(sqlDialect).getSql();
+    }
 }
